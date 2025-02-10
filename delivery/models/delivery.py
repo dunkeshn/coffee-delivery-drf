@@ -1,18 +1,20 @@
 
 from django.db import models
 
-from delivery.models.courier import Courier
+from common.models.mixins import DateMixin, GeolocationMixin
 from delivery.models.order import Order
 from users.models.users import User
 
 
-class Delivery(models.Model):
+class Delivery(DateMixin, GeolocationMixin):
     user = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='deliveries', verbose_name='Пользователь',
                              null=True)
     order = models.ForeignKey(to=Order, on_delete=models.PROTECT, related_name='deliveries', verbose_name='Заказ')
     time_left = models.TimeField('Времени доставки прошло', blank=True)
-    geolocation = models.CharField('Геолокация (заглушка)', max_length=255)
-    courier = models.ForeignKey(to=Courier, on_delete=models.PROTECT, related_name='deliveries', verbose_name='Курьер')
+    courier = models.ForeignKey(
+        to=User, on_delete=models.PROTECT, related_name='delivery_as_courier', verbose_name='Курьер',
+        limit_choices_to={'is_courier': True}
+    )
 
     class Meta:
         verbose_name = 'Доставка'

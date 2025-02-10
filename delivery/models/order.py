@@ -1,11 +1,15 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
+from common.models.mixins import DateMixin
 from delivery.models.cafe import Cafe
+from delivery.models.cart import Cart
 from delivery.models.product import Product
 from users.models.users import User
 
 
-class Order(models.Model):
+class Order(DateMixin):
 
     class DeliveryStatus(models.TextChoices):
         PAYING = 'PAYING', 'Оплата заказа'
@@ -34,3 +38,16 @@ class Order(models.Model):
 
     def __str__(self):
         return self.address
+
+#     def copy_from_cart(self):
+#         cart = self.user.cart
+#         self.products.set(cart.products.all())  # Копируем все товары из корзины
+#         self.sum = cart.sum  # Устанавливаем сумму из корзины
+#         self.save()
+#
+# @receiver(post_save, sender=Cart)
+# def create_order_from_cart(sender, instance, created, **kwargs):
+#     if created:
+#         # Создание нового заказа из корзины пользователя
+#         order = Order.objects.create(user=instance.user, sum=instance.sum, delivery_status=Order.DeliveryStatus.PAYING)
+#         order.copy_from_cart()  # Копируем данные из корзины в заказ

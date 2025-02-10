@@ -4,9 +4,35 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ParseError
 
-from users.serializers.nested.profile import ProfileShortSerializer, ProfileUpdateSerializer
+from delivery.models.cart import Cart
+from users.serializers.profile import ProfileShortSerializer, ProfileUpdateSerializer
 
 User = get_user_model()
+
+class CartShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cart
+        fields = (
+            'products',
+            'sum',
+        )
+
+
+class SubscriptionsShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            ('id', 'username', )
+        )
+
+
+class SubscribersShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            ('id', 'username', )
+        )
+
 
 class RegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
@@ -64,7 +90,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         validate_password(value)
         return value
 
-    def update(self, instance, validated_data): # замена пароля у пользователя
+    def update(self, instance, validated_data):
         password = validated_data.pop('new_password')
         instance.set_password(password)
         instance.save()
@@ -73,44 +99,48 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 
 class MeSerializer(serializers.ModelSerializer):
     profile = ProfileShortSerializer()
+    subscribers = SubscribersShortSerializer(many=True)
+    subscriptions = SubscriptionsShortSerializer(many=True)
+    cart = CartShortSerializer()
 
     class Meta:
         model = User
-        fields = (
-            'id',
-            'first_name',
-            'last_name',
-            'email',
-            'phone_number',
-            'username',
-            'profile',
-            'date_joined'
-        )
+        exclude = ('last_login',
+                   'is_superuser',
+                   'is_staff',
+                   'is_active',
+                   'date_joined',
+                   'groups',
+                   'user_permissions',
+                   'password',
+                   )
 
 
 class MeUpdateSerializer(serializers.ModelSerializer):
-    profile = ProfileShortSerializer()
+    profile = ProfileUpdateSerializer()
+    subscribers = SubscribersShortSerializer(many=True)
+    subscriptions = SubscriptionsShortSerializer(many=True)
 
     class Meta:
         model = User
-        fields = (
-            'id',
-            'first_name',
-            'last_name',
-            'email',
-            'phone_number',
-            'username',
-            'profile',
-        )
+        exclude = ('last_login',
+                   'is_superuser',
+                   'is_staff',
+                   'is_active',
+                   'date_joined',
+                   'groups',
+                   'user_permissions',
+                   'password',
+                   )
 
     def update(self, instance, validated_data):
         # Проверка наличия профиля
         profile_data = validated_data.pop('profile') if 'profile' in validated_data else None
 
-        with transaction.atomic():
-            instance = super().update(instance, validated_data)
+        instance = super().update(instance, validated_data)
 
-            # Update профиля
+        # Update профиля
+        if profile_data:
             self._update_profile(instance.profile, profile_data)
 
         return instance
@@ -118,7 +148,7 @@ class MeUpdateSerializer(serializers.ModelSerializer):
     def _update_profile(self, profile, data):
         profile_serilizer = ProfileUpdateSerializer(
             instance=profile,
-            data = data,
+            data=data,
             partial=True
         )
         profile_serilizer.is_valid(raise_exception=True)

@@ -8,27 +8,34 @@ from users.models.users import User
 
 class ProfileAdmin(admin.StackedInline):
     model = Profile
-    fields = ('telegram_id', )
+    fields = (
+            'telegram_id',
+            'beans',
+            'author_status',
+            'liked_posts',
+        )
 
 
 @admin.register(User)
 class UserAdmin(UserAdmin):
     change_user_password_template = None
     fieldsets = (
-        (None, {'fields': ('username', 'phone_number', )}),
+        (None, {'fields': ('username', 'phone_number', 'is_courier')}),
         (_('Личная информация'),
-            {'fields': ('first_name', 'last_name',)}),
+            {'fields': ('first_name', 'last_name', 'image')}),
+        (_('Блог'),
+            {'fields': ('subscriptions', 'subscribers',)}),
         (_('Permissions'),
-            {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+            {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions', )}),
         (_('Important dates'), {'fields': ('last_login',)}),
     )
     add_fieldset = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'phone_number', 'password1', 'password2',),
+            'fields': ('email', 'phone_number', 'password1', 'password2', 'is_courier'),
         }),
     )
-    list_display = ('id', 'full_name', 'email', 'phone_number', )
+    list_display = ('id', 'full_name', 'email', 'phone_number', 'is_courier', )
     list_display_links = ('id', 'full_name', )
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups', )
     search_fields = ('first_name', 'last_name', 'id', 'email', 'phone_number', )

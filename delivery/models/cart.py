@@ -11,7 +11,7 @@ from delivery.models.product import Product
 # User = get_user_model()
 
 class Cart(models.Model):
-    user = models.OneToOneField(to='users.User', on_delete=models.CASCADE, related_name='carts', verbose_name='Пользователь', null=True)
+    user = models.OneToOneField(to='users.User', on_delete=models.CASCADE, related_name='cart', verbose_name='Пользователь', null=True)
     products = models.ManyToManyField(to=Product, related_name='carts', verbose_name='Товары', null=True, blank=True )
     sum = models.DecimalField(verbose_name='Сумма', max_digits=10, decimal_places=2, null=True, blank=True)
 

@@ -1,5 +1,3 @@
-import pdb
-
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
@@ -8,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_204_NO_CONTENT
 from rest_framework.views import APIView
 
-from users.serializers.api.users import RegistrationSerializer
-from users.serializers.api import users as user_s
+from users.serializers import users as user_s
+from users.serializers.users import ChangePasswordSerializer
 
 User = get_user_model()
 
@@ -23,11 +21,13 @@ class RegistrationView(CreateAPIView):
 
 
 @extend_schema_view(
-    post=extend_schema(request=user_s.ChangePasswordSerializer, # Для APIView (?)!!!!!!!!
+    post=extend_schema(request=user_s.ChangePasswordSerializer,
                        summary='Смена пароля',
                        tags=['Аунтефикация & Авторизация']),
 )
 class ChangePasswordView(APIView):
+    serializer_class = ChangePasswordSerializer()
+
     def post(self, request):
         user = request.user
         serializer = user_s.ChangePasswordSerializer(

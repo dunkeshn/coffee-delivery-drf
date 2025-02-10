@@ -17,6 +17,14 @@ class User(AbstractUser):
     )
     email = models.EmailField('Почта', max_length=64, null=True, blank=True)
     phone_number = PhoneNumberField('Телефон', unique=True, null=True, blank=True)
+    image = models.ImageField(upload_to='pictures',
+                                null=True,
+                                blank=True,
+                                verbose_name='Фото')
+    subscriptions = models.ManyToManyField('self', blank=True, verbose_name='Подписки', symmetrical=False, related_name='subscription')
+    subscribers = models.ManyToManyField('self', blank=True, verbose_name='Подписчики', symmetrical=False, related_name='subscriber')
+    is_courier = models.BooleanField('Курьер', default=False)
+
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 

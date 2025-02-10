@@ -1,7 +1,9 @@
 from django.db import models
 
-class Cafe(models.Model):
-    geolocation = models.CharField('Геолокация (заглушка)', max_length=255, blank=True)
+from common.models.mixins import GeolocationMixin
+
+
+class Cafe(GeolocationMixin):
     address = models.TextField('Адрес кофейни')
     barista_number = models.PositiveSmallIntegerField('Число бариста на смене', default=0)
 
